@@ -1,0 +1,5 @@
+future plan:
+
+>A gemini version: where it decides the levels giving it more judgement powers based on the data without much/any rules.
+
+>Indirect gemini version: Gemini extracts succesful and failed trades data, finds the patterns and derives a set of rules that will be used by python script to present the levels.

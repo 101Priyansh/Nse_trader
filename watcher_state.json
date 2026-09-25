@@ -1,0 +1,38 @@
+{
+  "date": "2026-09-22",
+  "alerted": {
+    "CASTROLIND.NS": {
+      "setup": "BREAKOUT",
+      "rvol": 1.76,
+      "score": 11.34,
+      "dist_high": 1.42,
+      "alerted_at": "13:05:07 IST",
+      "alert_count": 1,
+      "entry_price": 195.05,
+      "sl": 191.48,
+      "sl_source": "swing"
+    },
+    "TITAN.NS": {
+      "setup": "PRIME",
+      "rvol": 2.82,
+      "score": 6.02,
+      "dist_high": 5.08,
+      "alerted_at": "13:05:09 IST",
+      "alert_count": 1,
+      "entry_price": 4923.0,
+      "sl": 4783.5,
+      "sl_source": "base"
+    },
+    "ABDL.NS": {
+      "setup": "MOMENTUM",
+      "rvol": 1.93,
+      "score": 3.22,
+      "dist_high": 8.35,
+      "alerted_at": "15:29:49 IST",
+      "alert_count": 1,
+      "entry_price": 652.05,
+      "sl": 646.65,
+      "sl_source": "ema20"
+    }
+  }
+}
