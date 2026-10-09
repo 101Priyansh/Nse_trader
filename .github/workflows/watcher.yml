@@ -4,7 +4,7 @@ name: Watcher
 # Cron is in UTC: IST = UTC + 5:30. GitHub may start scheduled runs a few minutes late.
 on:
   schedule:
-    - cron: "44 3 * * 1-5"   # 09:14 IST — morning session, runs until 12:00 IST
+    - cron: "28 3 * * 1-5"   # 08:58 IST — morning session (waits for 09:15 open), runs until 12:00 IST
     - cron: "50 7 * * 1-5"   # 13:20 IST — afternoon session, runs until close
   workflow_dispatch:
     inputs:
@@ -44,7 +44,7 @@ jobs:
         run: |
           if [ -n "${{ inputs.stop_at }}" ]; then
             STOP="${{ inputs.stop_at }}"
-          elif [ "${{ github.event.schedule }}" = "44 3 * * 1-5" ]; then
+          elif [ "${{ github.event.schedule }}" = "28 3 * * 1-5" ]; then
             STOP="12:00"
           else
             STOP="15:31"
