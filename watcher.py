@@ -61,6 +61,8 @@ def now_str() -> str:
 
 def in_market_hours() -> bool:
     n = now_ist()
+    if n.weekday() >= 5:   # Sat/Sun
+        return False
     o = n.replace(hour=MARKET_OPEN[0],  minute=MARKET_OPEN[1],  second=0, microsecond=0)
     c = n.replace(hour=MARKET_CLOSE[0], minute=MARKET_CLOSE[1], second=0, microsecond=0)
     return o <= n <= c
@@ -69,6 +71,8 @@ def seconds_until_open() -> int:
     n = now_ist()
     o = n.replace(hour=MARKET_OPEN[0], minute=MARKET_OPEN[1], second=0, microsecond=0)
     if n >= o:
+        o += datetime.timedelta(days=1)
+    while o.weekday() >= 5:   # skip to Monday
         o += datetime.timedelta(days=1)
     return int((o - n).total_seconds())
 
@@ -360,7 +364,7 @@ def main():
                 print(f"\n  ⏸  Outside market hours and next open is after stop time — exiting")
                 break
             h, m = divmod(secs // 60, 60)
-            open_time = (now_ist() + datetime.timedelta(seconds=secs)).strftime("%H:%M IST")
+            open_time = (now_ist() + datetime.timedelta(seconds=secs)).strftime("%a %H:%M IST")
             print(f"\n  ⏸  Outside market hours — sleeping until {open_time} ({h}h {m}m)")
             if args.once:
                 break
