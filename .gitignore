@@ -2,3 +2,6 @@
 __pycache__/
 *.pyc
 .claude/settings.local.json
+charts/
+pred_charts/
+watcher.log

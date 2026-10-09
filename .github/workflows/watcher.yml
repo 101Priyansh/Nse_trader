@@ -1,0 +1,64 @@
+name: Watcher
+
+# Two jobs per trading day (a single Actions job is capped at 6h).
+# Cron is in UTC: IST = UTC + 5:30. GitHub may start scheduled runs a few minutes late.
+on:
+  schedule:
+    - cron: "40 3 * * 1-5"   # 09:10 IST — morning session, runs until 12:20 IST
+    - cron: "50 6 * * 1-5"   # 12:20 IST — afternoon session, runs until close
+  workflow_dispatch:
+    inputs:
+      stop_at:
+        description: "Stop time in IST (HH:MM)"
+        default: "15:31"
+
+# Never run two watchers at once; the afternoon run waits for the morning one to finish.
+concurrency:
+  group: watcher
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      - name: Run watcher
+        env:
+          GEMINI_API_KEY:   ${{ secrets.GEMINI_API_KEY }}
+          TELE_TOKEN:       ${{ secrets.TELE_TOKEN }}
+          TELE_CHAT_ID:     ${{ secrets.TELE_CHAT_ID }}
+          TELE_TOKEN_SID:   ${{ secrets.TELE_TOKEN_SID }}
+          TELE_CHAT_ID_SID: ${{ secrets.TELE_CHAT_ID_SID }}
+        run: |
+          if [ -n "${{ inputs.stop_at }}" ]; then
+            STOP="${{ inputs.stop_at }}"
+          elif [ "${{ github.event.schedule }}" = "40 3 * * 1-5" ]; then
+            STOP="12:20"
+          else
+            STOP="15:31"
+          fi
+          python -u watcher.py --interval 30 --ai --stop-at "$STOP"
+
+      # Persist dedup state + trade log so the next run doesn't re-alert.
+      - name: Save state
+        if: always()
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add watcher_state.json trade_log.jsonl
+          git diff --cached --quiet && exit 0
+          git commit -m "Update watcher state [skip ci]"
+          git pull --rebase
+          git push

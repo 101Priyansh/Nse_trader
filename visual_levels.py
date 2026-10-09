@@ -16,6 +16,7 @@ Called from pipeline (replaces levels.py + draw_chart calls):
     levels, chart_path = get_visual_levels("HINDALCO.NS", ctx)
 """
 import warnings
+import tempfile
 from pathlib import Path
 
 import matplotlib
@@ -33,7 +34,7 @@ warnings.filterwarnings("ignore")
 from chart import _C, _TARGET_KEYS, _TARGET_COLORS, _DARK_STYLE, draw_chart
 from config import GEMINI_API_KEY, GEMINI_MODEL
 
-_CHARTS_DIR = Path(__file__).parent / "pred_charts"
+_CHARTS_DIR = Path(tempfile.gettempdir()) / "pro_trader_charts"
 
 
 # ── Data ───────────────────────────────────────────────────────────────────────

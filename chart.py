@@ -13,6 +13,7 @@ Called from pipeline:
                       targets={"T1": 1080, "T2": 1110, "T3": 1140, "T4": 1170})
 """
 import argparse
+import tempfile
 import warnings
 from pathlib import Path
 
@@ -79,7 +80,7 @@ def draw_chart(
     sl          : stop loss price (pre-computed by confirm.py hierarchy)
     sl_source   : label shown on chart ("candle" | "swing" | "atr")
     targets     : dict with keys T1–T4 (values as floats or "₹NNN" strings)
-    save_path   : output PNG path; defaults to /tmp/<SYMBOL>_chart.png
+    save_path   : output PNG path; defaults to <system temp>/pro_trader_charts/<SYMBOL>_chart.png
 
     Returns
     -------
@@ -190,7 +191,7 @@ def draw_chart(
 
         # ── Save ──────────────────────────────────────────────────────────────
         if save_path is None:
-            charts_dir = Path(__file__).parent / "charts"
+            charts_dir = Path(tempfile.gettempdir()) / "pro_trader_charts"
             charts_dir.mkdir(exist_ok=True)
             save_path = str(charts_dir / f"{sym_clean}_chart.png")
 

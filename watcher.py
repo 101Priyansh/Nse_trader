@@ -15,6 +15,7 @@ Usage:
   python watcher.py --ai-top 3       # Gemini on top 3 instead
   python watcher.py --once           # run one scan and exit (test mode)
   python watcher.py --force          # ignore market hours check (testing)
+  python watcher.py --stop-at 12:20  # exit at 12:20 IST instead of running forever (CI)
 
 Start in background, log to file
 cd /home/priyansh/files/pro_v2.1
@@ -264,6 +265,10 @@ def dispatch(confirmed: list[dict], state: dict, nifty_chg: float, nifty_warning
                 )
                 if path:
                     send_photo(path)
+                    try:
+                        os.remove(path)
+                    except OSError:
+                        pass
             if send(msg):
                 conf = c.get("conf") or {}
                 alerted[c["symbol"]] = {
@@ -306,7 +311,23 @@ def main():
                         help="Max stocks to send to Gemini (default: 2)")
     parser.add_argument("--once",     action="store_true",       help="Run one scan and exit")
     parser.add_argument("--force",    action="store_true",       help="Ignore market hours check")
+    parser.add_argument("--stop-at",  type=str,   default=None, dest="stop_at",
+                        help="Exit at this IST time, HH:MM (used by GitHub Actions)")
     args = parser.parse_args()
+
+    stop_at = None
+    if args.stop_at:
+        h, m = map(int, args.stop_at.split(":"))
+        stop_at = now_ist().replace(hour=h, minute=m, second=0, microsecond=0)
+
+    def past_stop() -> bool:
+        return stop_at is not None and now_ist() >= stop_at
+
+    def sleep_interval():
+        secs = args.interval * 60
+        if stop_at is not None:
+            secs = max(0, min(secs, int((stop_at - now_ist()).total_seconds())))
+        time.sleep(secs)
 
     from alerts import send
     from momentum import check_nifty, check_sector
@@ -317,6 +338,8 @@ def main():
     print(f"  Gemini   : {'on (top ' + str(args.ai_top) + ')' if args.ai else 'off'}")
     print(f"  Mode     : {'one-shot' if args.once else 'continuous'}")
     print(f"  State    : {STATE_FILE}")
+    if stop_at:
+        print(f"  Stop at  : {stop_at.strftime('%H:%M IST')}")
     print("━" * 50)
 
     send(f"🤖 Pro-Trader Watcher started\nInterval: {args.interval}min | "
@@ -326,10 +349,16 @@ def main():
     scan_num  = 0
 
     while True:
+        if past_stop():
+            break
+
         state = reset_if_new_day(state)
 
         if not args.force and not in_market_hours():
             secs = seconds_until_open()
+            if stop_at is not None and secs > (stop_at - now_ist()).total_seconds():
+                print(f"\n  ⏸  Outside market hours and next open is after stop time — exiting")
+                break
             h, m = divmod(secs // 60, 60)
             open_time = (now_ist() + datetime.timedelta(seconds=secs)).strftime("%H:%M IST")
             print(f"\n  ⏸  Outside market hours — sleeping until {open_time} ({h}h {m}m)")
@@ -371,7 +400,7 @@ def main():
                 break
             next_run = now_ist() + datetime.timedelta(minutes=args.interval)
             print(f"  ⏭  Next scan: {next_run.strftime('%H:%M IST')}")
-            time.sleep(args.interval * 60)
+            sleep_interval()
             continue
 
         # Sector momentum
@@ -403,7 +432,7 @@ def main():
 
         next_run = now_ist() + datetime.timedelta(minutes=args.interval)
         print(f"\n  ⏭  Next scan: {next_run.strftime('%H:%M IST')}")
-        time.sleep(args.interval * 60)
+        sleep_interval()
 
     print("\n  ✅  Watcher stopped.\n")
 
