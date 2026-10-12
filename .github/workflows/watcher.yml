@@ -1,7 +1,7 @@
 name: Watcher
 
 # Two jobs per trading day (a single Actions job is capped at 6h).
-# Cron is in UTC: IST = UTC + 5:30. GitHub may start scheduled runs a few minutes late.
+# Cron is in UTC: IST = UTC + 5:30. GitHub may start scheduled runs late (or skip them under load).
 on:
   schedule:
     - cron: "28 3 * * 1-5"   # 08:58 IST — morning session (waits for 09:15 open), runs until 12:00 IST
