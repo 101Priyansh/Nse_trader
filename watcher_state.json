@@ -1,4 +1,27 @@
 {
-  "date": "2026-10-10",
-  "alerted": {}
+  "date": "2026-10-12",
+  "alerted": {
+    "KARURVYSYA.NS": {
+      "setup": "BREAKOUT",
+      "rvol": 1.35,
+      "score": 3.31,
+      "dist_high": 4.41,
+      "alerted_at": "11:36:09 IST",
+      "alert_count": 1,
+      "entry_price": 342.95,
+      "sl": 325.6,
+      "sl_source": "swing"
+    },
+    "ANGELONE.NS": {
+      "setup": "MOMENTUM",
+      "rvol": 2.09,
+      "score": 1.6,
+      "dist_high": 16.01,
+      "alerted_at": "11:36:10 IST",
+      "alert_count": 1,
+      "entry_price": 302.0,
+      "sl": 295.42,
+      "sl_source": "ema20"
+    }
+  }
 }
